@@ -17,19 +17,23 @@ class UserController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * Requires 'edit articles' permission to create users.
      */
     public function store(Request $request)
     {
-        $user = User::create([
-        'name'     => $request->name,
-        'email'    => $request->email,
-        'password' => Hash::make($request->password),
-        'phone'    => $request->phone,
-        'address'  => $request->address,
-    ]);
+        if (!$request->user()->can('edit articles')) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
 
-    // Explicitly return the new user as JSON
-    return response()->json($user, 201);
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'phone'    => $request->phone,
+            'address'  => $request->address,
+        ]);
+
+        return response()->json($user, 201);
     }
 
     /**
@@ -42,12 +46,15 @@ class UserController extends Controller
 
     /**
      * Update the specified resource in storage.
+     * Requires 'edit articles' permission to update users.
      */
     public function update(Request $request, string $id)
     {
+        if (!$request->user()->can('edit articles')) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
         $user = User::findOrFail($id);
         $user->update($request->only(['name', 'email', 'phone', 'address']));
-        
         return response()->json([
             'message' => 'User updated!',
             'user' => $user
@@ -56,9 +63,13 @@ class UserController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     * Requires 'delete articles' permission to delete users.
      */
     public function destroy(string $id)
     {
+        if (!auth()->user()->can('delete articles')) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
         $user = User::findOrFail($id);
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);

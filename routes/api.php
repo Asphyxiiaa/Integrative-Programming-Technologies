@@ -5,9 +5,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 
-// Public authentication routes
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
+// Ensure API responses are always JSON
+Route::middleware('api')->group(function () {
+    // Public authentication routes
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
+});
 
 // Protected routes with Sanctum token authentication and role-based access control
 Route::middleware('auth:sanctum')->group(function () {
